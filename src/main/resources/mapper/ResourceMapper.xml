@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- 以上两行为myBatis固定写法 -->
+<!-- 使用namespace指定关联的mapper接口，如果不需要在java中使用，可以任意写namespace -->
+<mapper namespace="com.example.mycloudmusicapi.mapper.ResourceMapper">
+
+    <insert id="create" useGeneratedKeys="true">
+
+        insert into resource(id,uri,feed_id,user_id)
+        values
+        <foreach collection="res" item="item" separator=",">
+            (
+            (select replace(uuid(),'-','') as id),
+                #{item.uri},#{feedId},#{userId}
+            )
+        </foreach>
+    </insert>
+
+</mapper>

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- 以上两行为myBatis固定写法 -->
+<!-- 使用namespace指定关联的mapper接口，如果不需要在java中使用，可以任意写namespace -->
+<mapper namespace="com.example.mycloudmusicapi.mapper.FriendMapper">
+
+    <insert id="create" useGeneratedKeys="true">
+        <selectKey keyProperty="id" resultType="java.lang.String" order="BEFORE" keyColumn="id">
+            select replace(uuid(),'-','') as id
+        </selectKey>
+        insert into friend(id,follower_id,followed_id)
+        values(#{id},#{followerId},#{followedId})
+    </insert>
+
+    <delete id="destroy">
+        delete from friend where follower_id=#{currentId} and followed_id=#{other_id}
+    </delete>
+
+    <select id="getCountByFollowerAndFollowed" resultType="java.lang.Integer">
+        select count(1) from friend where follower_id=#{currentId} and followed_id=#{other_id}
+    </select>
+
+</mapper>

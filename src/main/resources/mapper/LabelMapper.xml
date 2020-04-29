@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- 以上两行为myBatis固定写法 -->
+<!-- 使用namespace指定关联的mapper接口，如果不需要在java中使用，可以任意写namespace -->
+<mapper namespace="com.example.mycloudmusicapi.mapper.LabelMapper">
+
+    <insert id="replace">
+        <!-- replace：若不存在则添加，若有不同则修改 -->
+        replace into `label`(id,tag_id,sheet_id,user_id)
+        values
+        <!-- 使用foreach可以遍历一个集合，从而生成一个动态的sql
+            collection管理在mapper接口方法中的字段，item为每次的对象
+            separator：表示每遍历一个添加的字符串-->
+        <foreach collection="tags" item="item" separator=",">
+            (#{item.id},#{item.tag_id},#{item.sheet_id},#{item.user_id})
+        </foreach>
+    </insert>
+
+</mapper>

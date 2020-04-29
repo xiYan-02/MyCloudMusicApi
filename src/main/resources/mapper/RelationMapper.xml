@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- 以上两行为myBatis固定写法 -->
+<!-- 使用namespace指定关联的mapper接口，如果不需要在java中使用，可以任意写namespace -->
+<mapper namespace="com.example.mycloudmusicapi.mapper.RelationMapper">
+
+    <insert id="create" useGeneratedKeys="true" keyColumn="id" keyProperty="id">
+        <!--  必要要通过keyProperty指定把id赋值到对象的那个字段上  -->
+        <selectKey resultType="java.lang.String" order="BEFORE" keyProperty="id">
+            select replace(uuid(),'-','') as id
+        </selectKey>
+        insert into `relation`(id,user_id,sheet_id,song_id)
+        values(#{id},#{userId},#{sheetId},#{songId})
+    </insert>
+
+    <select id="findBySheetId" resultType="java.lang.Integer">
+        select count(1) from `relation` where sheet_id=#{sheetId}
+    </select>
+
+    <select id="findBySongId" resultType="java.lang.Integer">
+        select count(1) from `relation` where song_id=#{songId}
+    </select>
+
+    <delete id="removeSongBySongIdAndSheetId">
+        delete from `relation` where song_id=#{songId} and sheet_id=#{sheetId}
+    </delete>
+
+</mapper>

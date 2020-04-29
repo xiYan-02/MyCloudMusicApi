@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd"  >
+<!--指定要实现UserMapper-->
+<mapper namespace="com.example.mycloudmusicapi.mapper.UserMapper">
+
+    <!--创建对象
+    虽然可以通过别名的方式省略模型前面的包名
+    但是不建议用别名
+    防止我们的类和系统类冲突
+
+    设置数据值时，只有特殊类型采用指定jdbcType
+    对于mysql来说特殊类型有byte数组
+    日期，时间-->
+<!-- parameterType:指定接收参数的类型
+    useGeneratedKeys：自动
+   keyColumn：指定主键的列
+   resultType:指定返回值类型
+   -->
+    <insert id="create" parameterType="com.example.mycloudmusicapi.domain.User" useGeneratedKeys="true"
+            keyColumn="id">
+        <!--生成uuid主键
+        keyProperty：主键的列
+        resultType：字段类型，写全称
+        order：执行顺序，BEFORE表示先执行该语句，然后再执行插入方法
+        后面的select语句就是赋值的过程
+        uuid是MySQL中的一个方法，能自动产生一串字符串，但中间会有-，所以使用replace方法把中间的-替换为''
+        -->
+        <selectKey keyProperty="id" resultType="java.lang.String" order="BEFORE">
+            select replace(uuid(),'-','') AS id
+        </selectKey>
+<!-- {id}中的值来自parameterType指定的数据，values()中的值是对象中的字段-->
+        insert into `user`
+        (id, nickname, avatar,
+        description,birthday,
+        email,phone,province,
+        province_code,city,city_code,
+        area,area_code,password,
+        qq_id,qq_id_digest,weibo_id,
+        weibo_id_digest)
+        values(#{id}, #{nickname},#{avatar},
+        #{description},#{birthday,jdbcType=DATE},
+        #{email},#{phone},#{province},
+        #{provinceCode},#{city},#{cityCode},
+        #{area},#{areaCode},#{password},
+        #{qqId},#{qqIdDigest},#{weiboId},
+        #{weiboIdDigest}
+        )
+    </insert>
+
+<!-- 查询所有用户   -->
+    <select id="findAll" resultType="com.example.mycloudmusicapi.domain.User">
+        select id,nickname,avatar,description,created_at from `user`;
+    </select>
+
+<!--  根据Id查询单一用户  -->
+    <select id="find" parameterType="java.lang.String" resultType="com.example.mycloudmusicapi.domain.User">
+        select * from `user`where id=#{id}
+    </select>
+
+    <select id="isExistPhone"  parameterType="java.lang.String" resultType="com.example.mycloudmusicapi.domain.User">
+        select * from `user` where phone=#{data}
+    </select>
+    <select id="isExistEmail"  parameterType="java.lang.String" resultType="com.example.mycloudmusicapi.domain.User">
+        select * from `user` where email=#{data}
+    </select>
+    <select id="isExistQQid"  parameterType="java.lang.String" resultType="com.example.mycloudmusicapi.domain.User">
+        select * from `user` where qq_id=#{data}
+    </select>
+    <select id="isExistWeiBo"  parameterType="java.lang.String" resultType="com.example.mycloudmusicapi.domain.User">
+        select * from `user` where weibo_id=#{data}
+    </select>
+    <select id="isExistWechat"  parameterType="java.lang.String" resultType="com.example.mycloudmusicapi.domain.User">
+        select * from `user` where wechat_id=#{data}
+    </select>
+
+<!--  set标签可以处理多余的 ,   -->
+    <update id="updateSession">
+        UPDATE  `user`
+        <set>
+            session_digest = #{data}
+        </set>
+        where id = #{id}
+    </update>
+
+    <update id="update" parameterType="com.example.mycloudmusicapi.domain.User">
+        update `user`
+        <set>
+        <!-- 如果字段为空的话，就不做更新，多个条件用and -->
+        <!-- 注意：这里判断的是字段，驼峰命名，在数据库中是小写命名，最后要打逗号 -->
+            <if test="nickname != null and nickname != ''">
+                nickname = #{nickname},
+            </if>
+            <if test="avatar != null">
+                avatar = #{avatar},
+            </if>
+            <!--描述不用判断为空
+            因为我们的需求是能删除描述-->
+            description = #{description},
+            <if test="gender != null">
+                gender = #{gender},
+            </if>
+            <if test="birthday != null">
+                birthday = #{birthday},
+            </if>
+            <if test="province != null">
+                province = #{province},
+            </if>
+            <if test="provinceCode != null">
+                province_code = #{provinceCode},
+            </if>
+            <if test="city != null">
+                city = #{city},
+            </if>
+            <if test="cityCode != null">
+                city_code = #{cityCode},
+            </if>
+            <if test="area != null">
+                area = #{area},
+            </if>
+            <if test="areaCode != null">
+                area_code = #{areaCode},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <!--更新账号相关字段
+        对于微博会生成如下sql:
+           update user SET weibo_id = ?, weibo_id_digest = ? where id = ? -->
+    <update id="updateAccount" >
+        update `user`
+        <set>
+        <!-- $与#的区别：都是访问参数，但$会在生成的时候直接赋值，一般用来当做字段
+                #是先生成一个？，当做占位符，然后在执行的时候赋值-->
+            ${field} = #{accountId},
+            ${field}_digest = #{accountDigest},
+        </set>
+        where id=#{id}
+    </update>
+
+<!--  更新邮箱确认信息，直接使用now()函数可以获取当前的时间  -->
+    <update id="updateConfirmationDigest">
+        update `user`
+        <set>
+            confirmation_digest = #{encrypt},
+            confirmation_send_at = now(),
+        </set>
+        where id=#{id}
+    </update>
+
+<!--  根据邮箱的ConfirmationDigest获取唯一用户  -->
+    <select id="findByConfirmationDigest" resultType="com.example.mycloudmusicapi.domain.User">
+        select * from `user` where confirmation_digest=#{confirmationDigest}
+    </select>
+
+<!--  清空数据库的ConfirmationDigest字段  -->
+    <update id="updateConfirmationSuccess">
+        update `user`
+        <set>
+            confirmation_digest = #{str},
+            confirmed_at = now(),
+        </set>
+        where id=#{id}
+    </update>
+
+<!--  更新验证码字段  -->
+    <update id="updateCode">
+        update `user`
+        <set>
+            code = #{codeString},
+            code_send_at = now(),
+        </set>
+        where id=#{id}
+    </update>
+
+    <update id="updatePassword">
+        update `user`
+        <set>
+            password = #{data}
+        </set>
+        where id = #{id}
+    </update>
+    
+</mapper>

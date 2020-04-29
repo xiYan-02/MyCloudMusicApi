@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- 以上两行为myBatis固定写法 -->
+<!-- 使用namespace指定关联的mapper接口，如果不需要在java中使用，可以任意写namespace -->
+<mapper namespace="com.example.mycloudmusicapi.mapper.FeedMapper">
+
+    <insert id="created" useGeneratedKeys="true">
+        <selectKey keyColumn="id" resultType="java.lang.String" keyProperty="id" order="BEFORE">
+            select replace(uuid(),'-','') as id
+        </selectKey>
+            insert into feed(
+            id,
+            content,
+            province,
+            city,
+            longitude,
+            latitude,
+            user_id
+            )values (
+            #{id},
+            #{content},
+            #{province},
+            #{city},
+            #{longitude},
+            #{latitude},
+            #{userId}
+            )
+    </insert>
+
+    <select id="findAll" resultType="com.example.mycloudmusicapi.domain.Feed">
+        select
+        feed.id,
+        feed.content,
+        feed.province,
+        feed.city,
+        feed.created_at,
+
+        user.id as "user.id",
+        user.nickname as "user.nickname",
+        user.avatar as "user.avatar"
+
+        from feed
+        left join user on feed.user_id = user.id
+        order by feed.created_at desc
+    </select>
+
+</mapper>

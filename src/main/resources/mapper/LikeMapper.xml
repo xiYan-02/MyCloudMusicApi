@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- 以上两行为myBatis固定写法 -->
+<!-- 使用namespace指定关联的mapper接口，如果不需要在java中使用，可以任意写namespace -->
+<mapper namespace="com.example.mycloudmusicapi.mapper.LikeMapper">
+
+    <insert id="create" useGeneratedKeys="true">
+        <selectKey resultType="java.lang.String" keyColumn="id" keyProperty="id" order="BEFORE">
+            select replace(uuid(),'-','') as id
+        </selectKey>
+         insert into `like`(
+            id,
+            comment_id,
+            user_id
+            )values(
+            #{id},
+            #{commentId},
+            #{userId}
+            )
+    </insert>
+
+    <delete id="destroy">
+        delete from `like` where comment_id=#{id} and user_id=#{userId}
+    </delete>
+
+    <select id="getCount" resultType="java.lang.Integer">
+        select count(1) from `like` where comment_id=#{id} and user_id=#{userId}
+    </select>
+
+    <select id="findByCommentIdAndUserId" resultType="com.example.mycloudmusicapi.domain.Like">
+        select * from `like` where comment_id=#{commentId} and user_id=#{userId}
+    </select>
+</mapper>

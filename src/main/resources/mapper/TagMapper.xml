@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- 以上两行为myBatis固定写法 -->
+<!-- 使用namespace指定关联的mapper接口，如果不需要在java中使用，可以任意写namespace -->
+<mapper namespace="com.example.mycloudmusicapi.mapper.TagMapper">
+
+    <select id="findAll" resultType="com.example.mycloudmusicapi.domain.Tag">
+        select id,title
+        from `tag`
+        <where>
+            <if test="parent != null">
+                parent_id = #{parent}
+            </if>
+            <if test="parent == null">
+                parent_id is null
+            </if>
+        </where>
+    </select>
+
+</mapper>

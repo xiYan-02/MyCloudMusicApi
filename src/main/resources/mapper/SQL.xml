@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd"  >
+
+<!--用来放重复的sql
+目的是把重复的sql放到统一的文件
+方便引用和管理-->
+<mapper namespace="sql">
+    <!--通用其他表用户查询列sql-->
+    <sql id="user_column">
+        user.id as user_id,user.nickname as user_nickname,user.avatar as user_avatar
+    </sql>
+</mapper>

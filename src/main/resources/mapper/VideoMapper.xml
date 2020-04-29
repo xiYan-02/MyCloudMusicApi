@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- 以上两行为myBatis固定写法 -->
+<!-- 使用namespace指定关联的mapper接口，如果不需要在java中使用，可以任意写namespace -->
+<mapper namespace="com.example.mycloudmusicapi.mapper.VideoMapper">
+
+    <select id="findAll" resultType="com.example.mycloudmusicapi.domain.Video">
+        select video.id,video.title,video.banner,video.duration,
+        video.uri,video.clicks_count,video.likes_count,video.comments_count,
+        `user`.id as "user.id",
+        `user`.nickname as "user.nickname",
+        `user`.avatar as "user.avatar"
+        from video left join `user`
+        on video.user_id=`user`.id
+        ORDER BY video.created_at desc
+    </select>
+
+    <select id="findById" resultType="com.example.mycloudmusicapi.domain.Video">
+        select video.id,video.title,video.banner,video.duration,
+        video.uri,video.clicks_count,video.likes_count,video.comments_count,
+        `user`.id as "user.id",
+        `user`.nickname as "user.nickname",
+        `user`.avatar as "user.avatar"
+        from video left join `user`
+        on video.user_id=`user`.id
+        where video.id=#{id}
+    </select>
+
+</mapper>

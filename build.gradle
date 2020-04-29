@@ -1,0 +1,109 @@
+plugins {
+//    SpringBoot的插件
+    id 'org.springframework.boot' version '2.2.4.RELEASE'
+//    SpringBoot依赖管理插件
+    id 'io.spring.dependency-management' version '1.0.9.RELEASE'
+//    应用java插件
+    id 'java'
+}
+
+//项目的组配置
+group = 'com.example'
+
+//项目版本
+version = '1.0.0-SNAPSHOT'
+
+//jdk版本
+sourceCompatibility = '1.8'
+
+//仓库配置，可以使用国内的仓库，如阿里云的，这样访问速度就快一些
+repositories {
+    mavenCentral()
+}
+
+//依赖管理
+dependencies {
+//    web框架的依赖
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    
+//    myBatis
+    implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:2.1.1'
+
+    //mysql数据库驱动
+    //因为我们使用了MySQL，所以添加MySQL驱动
+    //如果大家使用其他数据库，只需要换成其他数据库对应的驱动
+    runtimeOnly 'mysql:mysql-connector-java'
+
+    //常用加密算法工具类
+    //https://commons.apache.org/proper/commons-codec/
+    implementation group: 'commons-codec', name: 'commons-codec', version: '1.13'
+    
+//    测试相关
+    testImplementation('org.springframework.boot:spring-boot-starter-test') {
+        exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
+    }
+
+    //MyBatis通用分页插件
+    //通过aop(面向切面编程)方法拦截sql，然后添加分页参数
+    //https://github.com/pagehelper/pagehelper-spring-boot
+    implementation 'com.github.pagehelper:pagehelper-spring-boot-starter:1.2.13'
+
+//    lombok
+    compile "org.projectlombok:lombok:1.18.10"
+    //通过编译注解方式生成get,set等方法
+    compileOnly 'org.projectlombok:lombok'
+
+    //swagger接口文档
+    implementation 'io.springfox:springfox-swagger2:2.9.2'
+    implementation 'io.springfox:springfox-swagger-ui:2.9.2'
+
+    //使用BCryptPasswordEncoder加密
+    //spring-boot-starter-security中就引用了
+    //这里不使用spring-boot-starter-security
+    //所以就单独引用这个包
+    implementation 'org.springframework.security:spring-security-core:5.2.1.RELEASE'
+
+    //模板框架
+    //如果是做web开发，用该框架比较多
+    //这里主要实现邮件模板
+    implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
+
+    //发送邮件
+    implementation 'org.springframework.boot:spring-boot-starter-mail'
+
+    //阿里云新版通用sdk
+    //基本上可以调用所有服务
+    //https://help.aliyun.com/document_detail/112148.html
+    implementation 'com.aliyun:aliyun-java-sdk-core:4.4.9'
+    //阿里云OSS
+    //用来在服务端操作阿里云OSS
+    //我们这里目前来说并没有直接操作oss
+    //所以可以不用集成
+    //https://help.aliyun.com/document_detail/32009.html
+    implementation 'com.aliyun.oss:aliyun-sdk-oss:3.8.1'
+
+    //阿里云STS SDK
+    //用来生成临时访问阿里云服务token
+    //我们这里用他生成临时oos token返回给客户端
+    //可视化使用临时token上传文件到oss
+    //https://help.aliyun.com/document_detail/28786.html
+    implementation 'com.aliyun:aliyun-java-sdk-sts:3.0.1'
+    implementation 'com.aliyun:aliyun-java-sdk-core:4.4.9'
+
+    //Hutool是一个小而全的Java工具类库
+    // 通过静态方法封装，降低相关API的学习成本
+    // 提高工作效率，使Java拥有函数式语言般的优雅
+    //https://github.com/looly/hutool
+    implementation 'cn.hutool:hutool-all:5.1.0'
+
+    //apache common lang3工具包
+    //提供了StringUtils等这样的类
+    //http://commons.apache.org/proper/commons-lang/
+    implementation 'org.apache.commons:commons-lang3:3.9'
+
+}
+
+//测试方法
+test {
+    useJUnitPlatform()
+}

@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- 以上两行为myBatis固定写法 -->
+<!-- 使用namespace指定关联的mapper接口，如果不需要在java中使用，可以任意写namespace -->
+<mapper namespace="com.example.mycloudmusicapi.mapper.AdMapper">
+<!--  useGeneratedKeys:是否开启生成key  -->
+    <insert id="create" useGeneratedKeys="true">
+        <!-- 获取uuid并保存在指定的变量中
+                resultType:指定返回的结果
+                 order：实行顺序，这里在执行insert之前执行
+                 keyProperty：指定主键的列-->
+        <selectKey resultType="java.lang.String" order="BEFORE" keyProperty="id">
+            <!-- 替换uuid中的 - ，并保存到变量id中 -->
+            select replace(uuid(),'-','') as id
+        </selectKey>
+        insert into `ad` (
+            id,title,banner,
+            uri,`order`,user_id
+        )values (
+            #{id},#{title},#{banner},
+            #{uri},#{order},#{userId}
+        )
+    </insert>
+
+<!--  自定义返回类型，实现对象套对象  -->
+    <resultMap id="adMap" type="com.example.mycloudmusicapi.domain.Ad">
+<!--   column为数据库中的字段，property为对象中的字段     -->
+        <id column="id" property="id"></id>
+        <result column="title" property="title"></result>
+        <result column="banner" property="banner"></result>
+        <result column="uri" property="uri"></result>
+        <result column="order" property="order"></result>
+        <result column="created_at" property="createdAt" jdbcType="TIMESTAMP"></result>
+        <result column="updated_at" property="updatedAt" jdbcType="TIMESTAMP"></result>
+
+<!--    用户对象，使用association实现包裹对象    -->
+        <association property="user" javaType="com.example.mycloudmusicapi.domain.User">
+            <result column="user_id" property="id"></result>
+            <result column="user_nickname" property="nickname"></result>
+            <result column="user_avatar" property="avatar"></result>
+        </association>
+
+    </resultMap>
+
+    <sql id="ad_column">
+            ad.id,ad.title,ad.banner,ad.uri,ad.`order`,ad.created_at,ad.updated_at,
+    </sql>
+
+<!--  查询所有广告  -->
+    <select id="findAll" resultMap="adMap">
+        SELECT
+
+            <include refid="ad_column"></include>
+            <include refid="sql.user_column"></include>
+
+        FROM
+            `ad` LEFT JOIN `user` ON ad.user_id = USER.id
+        ORDER BY ad.`order` DESC
+    </select>
+
+<!--  根据id查询一条广告  -->
+    <select id="find" resultMap="adMap">
+        SELECT
+
+        <include refid="ad_column"></include>
+        <include refid="sql.user_column"></include>
+
+        FROM
+        `ad` LEFT JOIN `user` ON ad.user_id = USER.id
+        where ad.id = #{id}
+    </select>
+
+<!--  更新广告部分字段  -->
+    <update id="update">
+        update `ad`
+        <set>
+            title = #{title},
+            banner = #{banner},
+            `order` = #{order},
+            uri = #{uri},
+        </set>
+        where id = #{id}
+    </update>
+
+<!--    根据id删除广告-->
+    <delete id="delete">
+        delete from ad
+        where id = #{id}
+    </delete>
+
+    <sql id="user_column">
+        user.id as user_id,user.nickname as user_nickname,user.avatar as user_avatar
+    </sql>
+
+</mapper>

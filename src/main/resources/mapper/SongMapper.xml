@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- 以上两行为myBatis固定写法 -->
+<!-- 使用namespace指定关联的mapper接口，如果不需要在java中使用，可以任意写namespace -->
+<mapper namespace="com.example.mycloudmusicapi.mapper.SongMapper">
+
+    <insert id="create" useGeneratedKeys="true" keyColumn="id" keyProperty="id">
+
+        <selectKey keyProperty="id" keyColumn="id" order="BEFORE" resultType="java.lang.String">
+            select replace(uuid(),'-','') as id
+        </selectKey>
+
+        replace into `song`(id,title,banner,uri,style,lyric,user_id,singer_id)
+        values(#{id},#{title},#{banner},#{uri},#{style},#{lyric},#{userId},#{singerId})
+    </insert>
+
+    <select id="find" resultType="com.example.mycloudmusicapi.domain.Song">
+        select
+            <include refid="song_column"></include>,
+        	<!-- 会给你自动映射到song的user对象的对应字段中，效果同resultMap -->
+            `song`.user_id as "user.id",`user`.nickname as "user.nickname",`user`.avatar as "user.avatar",
+            song.singer_id as "singer.id",singer.nickname as "singer.nickname",singer.avatar as "singer.avatar"
+            from song
+            join `user` on song.user_id=`user`.id
+            left join `user` as singer on singer.id=song.singer_id
+            where song.id=#{id}
+    </select>
+
+    <update id="update">
+        update `song`
+        <set>
+            <if test="title != null">
+                title=#{title},
+            </if>
+            <if test="banner != null">
+                banner=#{banner},
+            </if>
+            <if test="uri != null">
+                uri=#{uri},
+            </if>
+            <if test="style != null">
+                style=#{style},
+            </if>
+            <if test="lyric != null">
+                lyric=#{lyric},
+            </if>
+            <if test="singerId != null">
+                singer_id=#{singerId},
+            </if>
+        </set>
+        where id=#{id} and user_id=#{userId}
+    </update>
+
+    <delete id="delete">
+        delete from `song`
+        where id=#{id} and user_id=#{userId}
+    </delete>
+
+<!--  查询所有，手动实现分页  -->
+    <!-- <select id="findAll" resultMap="songResult">
+        select
+        <include refid="song_column"></include>,
+        <include refid="sql.user_column"></include>,
+        song.singer_id as singer_id,singer.nickname as singer_nickname,singer.avatar as singer_avatar
+        from song
+        join `user` on song.user_id=`user`.id
+        left join `user` as singer on singer.id=song.singer_id
+        limit #{size} offset #{offset}
+    </select> -->
+
+    <!--  查询所有，MyBatis实现分页  -->
+    <select id="findAll" resultMap="songResult">
+        select
+        <include refid="song_column"></include>,
+        <include refid="sql.user_column"></include>,
+        song.singer_id as singer_id,singer.nickname as singer_nickname,singer.avatar as singer_avatar
+        from song
+        join `user` on song.user_id=`user`.id
+        left join `user` as singer on singer.id=song.singer_id
+        order by song.created_at desc
+    </select>
+
+    <select id="getCount" resultType="java.lang.Integer">
+        select count(1) from song
+    </select>
+
+<!--  根据歌单id查询所有歌曲  -->
+    <select id="findBySheetId" resultMap="songResult">
+        select
+        <include refid="song_column"></include>,
+        <include refid="sql.user_column"></include>,
+        song.singer_id as singer_id,singer.nickname as singer_nickname,singer.avatar as singer_avatar
+        from song
+        join `user` on song.user_id=`user`.id
+        left join `user` as singer on singer.id=song.singer_id
+        where song.id in (select song_id from `relation` where sheet_id=#{sheetId})
+        order by song.created_at desc
+    </select>
+
+    <!--  这里用resultMap方式实现，两种方式都要会  -->
+    <resultMap autoMapping="true" id="songResult" type="com.example.mycloudmusicapi.domain.Song">
+<!--   用户映射     -->
+        <association property="user" javaType="com.example.mycloudmusicapi.domain.User">
+            <result column="user_id" property="id"></result>
+            <result column="user_nickname" property="nickname"></result>
+            <result column="user_avatar" property="avatar"></result>
+        </association>
+
+<!--     歌手映射   -->
+        <association property="singer" javaType="com.example.mycloudmusicapi.domain.User">
+            <result column="singer_id" property="id"></result>
+            <result column="singer_nickname" property="nickname"></result>
+            <result column="singer_avatar" property="avatar"></result>
+        </association>
+
+    </resultMap>
+
+    <sql id="song_column">
+        	song.id,song.title,song.banner,song.uri,song.style,song.lyric,song.clicks_count,song.comments_count,song.created_at,song.updated_at
+    </sql>
+
+</mapper>

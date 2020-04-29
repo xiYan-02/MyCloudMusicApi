@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- 以上两行为myBatis固定写法 -->
+<!-- 使用namespace指定关联的mapper接口，如果不需要在java中使用，可以任意写namespace -->
+<mapper namespace="com.example.mycloudmusicapi.mapper.CommentMapper">
+
+    <insert id="create" useGeneratedKeys="true" keyColumn="id" keyProperty="id">
+        <selectKey keyProperty="id" keyColumn="id" resultType="java.lang.String" order="BEFORE">
+            select replace(uuid(),'-','') as id
+        </selectKey>
+        insert into comment(
+        id,
+        content,
+        parent_id,
+        video_id,
+        sheet_id,
+        song_id,
+        user_id
+        )values(
+        #{id},
+        #{content},
+        #{parentId},
+        #{videoId},
+        #{sheetId},
+        #{songId},
+        #{userId}
+        )
+    </insert>
+
+    <select id="findAll" resultType="com.example.mycloudmusicapi.domain.Comment">
+         SELECT
+            c.id,
+            c.content,
+            c.likes_count,
+            c.created_at,
+            c.updated_at,
+            u.id AS "user.id",
+            u.nickname AS "user.nickname",
+            u.avatar AS "user.avatar",
+            parent.id as "parent.id",
+            parent.content as "parent.content",
+            sheet.id as "sheet.id",
+            sheet.title as "sheet.title",
+            sheet_user.id as "sheet.user.id",
+            sheet_user.nickname as "sheet.user.nickname",
+            sheet_user.avatar as "sheet.user.avatar"
+        FROM
+            COMMENT AS c
+            left join comment as parent on c.parent_id=parent.id
+            INNER JOIN `user` AS u ON c.user_id = u.id
+            left join sheet on c.sheet_id=sheet.id
+            left join `user` as sheet_user on sheet.user_id=sheet_user.id
+            <!--where标签的好处是
+            如果map为空
+            生成的sql他不会有where-->
+            <where>
+            <!--  遍历map，item为value，index为key  -->
+                <foreach collection="map" separator="and" item="val" index="key">
+                    ${key}=${val}
+                </foreach>
+            </where>
+        order by ${filed} desc
+    </select>
+
+</mapper>

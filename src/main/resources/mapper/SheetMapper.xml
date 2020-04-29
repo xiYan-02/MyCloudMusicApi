@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- 以上两行为myBatis固定写法 -->
+<!-- 使用namespace指定关联的mapper接口，如果不需要在java中使用，可以任意写namespace -->
+<mapper namespace="com.example.mycloudmusicapi.mapper.SheetMapper">
+<!--  useGeneratedKeys:是否开启生成key  -->
+    <insert id="create" useGeneratedKeys="true">
+        <!-- 获取uuid并保存在指定的变量中
+                resultType:指定返回的结果
+                 order：实行顺序，这里在执行insert之前执行
+                 keyProperty：指定主键的列-->
+        <selectKey resultType="java.lang.String" order="BEFORE" keyProperty="id">
+            <!-- 替换uuid中的 - ，并保存到变量id中 -->
+            select replace(uuid(),'-','') as id
+        </selectKey>
+        insert into `sheet` (
+            id,title,banner,
+            description,user_id
+        )values (
+            #{id},#{title},#{banner},
+            #{description},#{userId}
+        )
+    </insert>
+
+    <select id="getAll" resultMap="sheetResult">
+       <include refid="sheet_select"></include>
+            from sheet join `user` on sheet.user_id = `user`.id
+            order by sheet.created_at desc
+              <!-- limit:取10条数据，offset：从第0条开始取10条 -->
+            limit 10 offset 0
+    </select>
+
+<!--  歌单详情  -->
+    <select id="find" resultMap="sheetResult">
+    select
+        sheet.id,
+        sheet.title,
+        sheet.banner,
+        sheet.clicks_count,
+        sheet.collections_count,
+        sheet.comments_count,
+        sheet.created_at,
+        sheet.description,
+
+        sheet.user_id as user_id,
+        user.nickname as user_nickname,
+        user.avatar as user_avatar,
+
+        tag.id as tag_id,
+        tag.title as tag_title
+
+    from sheet
+    inner join `user` on sheet.user_id = `user`.id
+    left join label on sheet.id=label.sheet_id
+    left join tag on tag.id = label.tag_id
+        where sheet.id=#{id}
+    </select>
+
+<!--  查询用户创建的歌单  -->
+    <select id="findByUserId" resultMap="sheetResult">
+        <include refid="sheet_select"></include>
+        from sheet
+        join `user` on sheet.user_id = `user`.id
+        where `user`.id=#{id}
+        order by sheet.created_at desc
+    </select>
+
+<!--  返回用户收藏的歌单  -->
+    <select id="findCollectionByUserId" resultMap="sheetResult">
+        <include refid="sheet_select"></include>
+        from sheet
+        join collection on sheet.id=collection.sheet_id
+        left join `user` on collection.user_id=`user`.id
+        where collection.user_id=#{id}
+        order by sheet.created_at desc
+    </select>
+
+<!--  更新歌单部分字段  -->
+    <update id="updateByIdAndUserId">
+        update `sheet`
+        <set>
+            <!-- 可以用来防止所更新的字段都为空时的sql报错，当然也可以在代码中判断是否都为空 -->
+            id = #{id},
+            <if test="title!=null and title!=''">
+                title=#{title},
+            </if>
+            <if test="banner != null">
+                banner=#{banner},
+            </if>
+            <if test="description!=null">
+                description=#{description},
+            </if>
+        </set>
+        where id=#{id} and user_id=#{userId}
+    </update>
+
+    <delete id="deleteByIdAndUserId">
+        delete from `sheet` where id=#{id} and user_id=#{userId}
+    </delete>
+
+
+    <select id="findByIdAndUserId" resultMap="sheetResult">
+        select id from `sheet` where id=#{id} and user_id=#{userId}
+    </select>
+
+
+<!--  歌单列表通用字段对象  -->
+    <sql id="sheet_select">
+        select sheet.id,sheet.title,sheet.banner,
+        sheet.description,sheet.updated_at,sheet.created_at,
+        <!--`user`.id as user_id,`user`.nickname as user_nickname,`user`.avatar as user_avatar-->
+        <include refid="sql.user_column"></include>
+    </sql>
+<!--  歌单模型  -->
+<!--     autoMapping="true" 你可以不用写一些字段，会自动给你映射 -->
+    <resultMap id="sheetResult" autoMapping="true" type="com.example.mycloudmusicapi.domain.Sheet">
+
+        <id column="id" property="id"></id>
+        <association property="user" resultMap="result.user">
+
+        </association>
+
+<!--     根据上面指定的id自动过滤重复的id，然后映射到一个 List<Tag> 中   -->
+        <collection property="tags" ofType="com.example.mycloudmusicapi.domain.Tag">
+            <id column="tag_id" property="id"></id>
+            <result column="tag_title" property="title"></result>
+        </collection>
+
+    </resultMap>
+    
+
+</mapper>

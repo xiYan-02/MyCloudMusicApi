@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- 以上两行为myBatis固定写法 -->
+<!-- 使用namespace指定关联的mapper接口，如果不需要在java中使用，可以任意写namespace -->
+<mapper namespace="com.example.mycloudmusicapi.mapper.FeedMapper">
+
+    <insert id="created" useGeneratedKeys="true">
+        <selectKey resultType="java.lang.String" order="BEFORE" keyProperty="id">
+            <!-- 替换uuid中的 - ，并保存到变量id中 -->
+            select replace(uuid(),'-','') as id
+        </selectKey>
+        insert into feed(
+        id,
+        content,
+        province,
+        city,
+        longitude,
+        latitude,
+        user_id
+        )values (
+        #{id},
+        #{content},
+        #{province},
+        #{city},
+        #{longitude},
+        #{latitude},
+        #{userId}
+        )
+    </insert>
+
+    <select id="findAll" resultMap="feedMap">
+        select
+        feed.id,
+        feed.content,
+        feed.province,
+        feed.city,
+        feed.created_at,
+
+        <include refid="sql.user_column"></include>,
+        resource.uri
+
+        from feed
+        left join user on feed.user_id = user.id
+        left join resource on feed.id=resource.feed_id
+        order by feed.created_at desc
+    </select>
+
+    <!--
+        type：指定映射的类型
+        autoMapper：对于实体类中和数据库中字段相同的会自动映射(会给你自动识别_)
+      -->
+    <resultMap id="feedMap" type="com.example.mycloudmusicapi.domain.Feed" autoMapping="true">
+        <!--  这个id一定要指定，collection就是通过这个id来过滤掉结果集中重复数据的  -->
+        <id property="id" column="id"></id>
+        <!--  这里也可以用javaType指定类型，然后再写字段  -->
+        <association property="user" resultMap="result.user">
+
+        </association>
+
+        <!--
+            property：指定映射到父级哪一个对象中
+            ofType：指定映射的类型
+          -->
+        <collection property="images" ofType="com.example.mycloudmusicapi.domain.Resource">
+            <result column="uri" property="uri"></result>
+        </collection>
+    </resultMap>
+</mapper>

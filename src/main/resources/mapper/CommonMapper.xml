@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- 以上两行为myBatis固定写法 -->
+<!-- 使用namespace指定关联的mapper接口，如果不需要在java中使用，可以任意写namespace -->
+<mapper namespace="com.example.mycloudmusicapi.mapper.CommonMapper">
+
+<!--  +1  -->
+    <update id="increment">
+        update `${table}`
+        set ${filed}=${filed} + 1
+        where id=#{id}
+    </update>
+
+<!--  -1  -->
+    <update id="decrement">
+        update `${table}`
+        set ${filed}=${filed} - 1
+        where id=#{id} and ${filed} > 0
+    </update>
+
+
+</mapper>

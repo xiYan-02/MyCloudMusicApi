@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuration
+        PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+    <settings>
+        <!--自动驼峰命名；例如：数据库中是area_code
+        设置为true以后，查询结果转为对象的时候，会自动赋值到areaCode字段-->
+        <setting  name="mapUnderscoreToCamelCase"  value="true"/>
+
+        <!-- 打印sql语句 -->
+        <setting name="logImpl" value="STDOUT_LOGGING" />
+    </settings>
+</configuration>
